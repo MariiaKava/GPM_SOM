@@ -1,7 +1,11 @@
-setwd("C:/Users/rkpra/OneDrive/Documents/R_projects/GPM_download")
+source("./code/source.R")
 
-fil <- "C:/Users/rkpra/OneDrive/Documents/R_projects/GPM_download/subset_GPM_3IMERGDF_06_20200826_193405.txt"
-url <- scan(fil, what = list(""), flush = TRUE)
+
+links_file <- "subset_GPM_3IMERGDF_06_20200826_193405.txt"
+
+file <- paste0(dload_path, links_file)
+
+url <- scan(file, what = list(""), flush = TRUE)
 urls <- unlist(url)
 #t = basename(urls)
 names = substr(urls, 228, 280) #subset the character for naming the files
