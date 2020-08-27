@@ -8,6 +8,6 @@ names = substr(urls, 228, 280) #subset the character for naming the files
 library(httr)
 for (i in 1:length(urls)){
   GET(as.character(urls[i]),
-      authenticate("rkpradhan462@gmail.com", "Rajani8099"),
+      authenticate("", ""),
       write_disk(path = names[i], overwrite = T))
 }
