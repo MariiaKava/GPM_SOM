@@ -12,4 +12,3 @@ dir.create('./results/figures/archive') #figures not used in papers/presentation
 dir.create('./docs')
 dir.create('./docs/literature')
 
-remotes::install_github("r-spatial/rgee")
