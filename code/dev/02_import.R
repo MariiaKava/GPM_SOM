@@ -4,14 +4,15 @@ source("code/source.R")
 
 
 
-data_path="data/raw/sample/"
-all_nc4 <- list.files(data_path)
+instaldata_path="data/raw/sample/"
+all_nc4 <- list.files(instaldata_path)
 precip_summary_final <- data.table()
+
 
 
 for (i in 1:length(all_nc4)){
 
-precipitation_nc <- nc_open(paste0(data_path,all_nc4[i]))
+precipitation_nc <- nc_open(paste0(dload_path,all_nc4[i]))
 precipitation_data <- ncvar_get(precipitation_nc)
 date <- as.Date("1970-01-01 00:00")+ precipitation_nc$dim$time$vals/60/60/24
 
@@ -45,5 +46,7 @@ precip_summary_final <- rbind(precip_summary,precip_summary_final,use.names=FALS
 
 
 saveRDS(precip_summary_final, "data/precipitation.rds")
+
+
 
 
