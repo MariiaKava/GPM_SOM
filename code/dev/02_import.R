@@ -1,49 +1,18 @@
-source("code/source.R")
-
-
-
-
+source("code/dev/functions.R")
 
 instaldata_path="data/raw/sample/"
 all_nc4 <- list.files(instaldata_path)
 precip_summary_final <- data.table()
 
+#----parallel execution settings----
 
+cl <- makeCluster(detectCores() - 1) # no.cores
+registerDoParallel(cl)
 
-for (i in 1:length(all_nc4)){
+#call function to merge all nc4 files in one data table with parallel execution 
+system.time(precip_summary_final <- foreach(i=1:length(all_nc4),.combine = rbind) %dopar%  merge_nc4(i))
 
-precipitation_nc <- nc_open(paste0(dload_path,all_nc4[i]))
-precipitation_data <- ncvar_get(precipitation_nc)
-date <- as.Date("1970-01-01 00:00")+ precipitation_nc$dim$time$vals/60/60/24
-
-
-
-dimnames(precipitation_data)[[1]] <- precipitation_nc$dim$lat$vals
-dimnames(precipitation_data)[[2]] <- precipitation_nc$dim$lon$vals
-
-
-
-kk <- nc_close(precipitation_nc)
-
-
-precip_summary <- data.table(melt(precipitation_data,
-                        varnames = c("lat", "lon"),
-                        value.name = "Precipitation"))
-
-precip_summary <- precip_summary[complete.cases(precip_summary), ] 
-
-
-
-date <- array(format(date,"%d/%m/%Y"),length(precip_summary$lat))
-precip_summary <- cbind(precip_summary,date)
-precip_summary$Precipitation[precip_summary$Precipitation<1]<-0 #Set all values with precipitation < 1mm to 0
-
-
-precip_summary_final <- rbind(precip_summary,precip_summary_final,use.names=FALSE)
-
-
-}
-
+stopCluster(cl)
 
 saveRDS(precip_summary_final, "data/precipitation.rds")
 
