@@ -17,15 +17,13 @@ merge_nc4 <- function(i){
   precip_summary <- data.table::data.table(reshape2::melt(precipitation_data,
                                                           varnames = c("lat", "lon"),
                                                           value.name = "precipitation"))
-  precip_summary <- precip_summary[complete.cases(precip_summary), ] 
+  precip_summary[-is.na(precipitation),] 
   
-  precip_summary$precipitation[precip_summary$precipitation<1]<-0 #Set all values with precipitation < 1mm to 0
+  precip_summary[precipitation<1,precipitation:=0] #Set all values with precipitation < 1mm to 0
   
   if (any(precip_summary$precipitation >0)){
   
-  precip_summary <- precip_summary[precip_summary$precipitation>0,]
-  
-  precip_summary <- precip_summary[complete.cases(precip_summary), ]
+  precip_summary[precipitation>0,]
   
   precip_summary <- cbind(precip_summary,date)
   
