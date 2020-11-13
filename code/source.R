@@ -3,6 +3,8 @@ library(ggplot2)
 library(ncdf4) 
 library(doParallel)
 library(reshape2)
+library(doSNOW)
+library(utils)
 
 
 dload_path <- "data/raw/"
