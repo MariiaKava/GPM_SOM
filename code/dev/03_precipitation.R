@@ -115,7 +115,6 @@ precipitation_class_year_season <- precipitation_class[,.(no_events_season = .N)
                                                            by = .(lat,lon,year,season,precipitation_class)]
 
 precipitation_avg_class_year_season <- data.table()
-precipitation_summary1 <- data.table()
 
 levels(precipitation_class_year_season$season)[1]
 
@@ -136,5 +135,8 @@ for (i in 1:length(levels(precipitation_class_year_season$season))){
     
   }
 }
+
+saveRDS(precipitation_summary,"data/precipitation_summary.rds")
+
 
 
