@@ -40,4 +40,21 @@ merge_nc4 <- function(i){
   
 }
 
+add_seasons <- function(dt){
+  dt[month == 12 | month == 1 | month == 2, season := 'winter']
+  dt[month == 3 | month == 4 | month == 5, season := 'spring']
+  dt[month == 6 | month == 7 | month == 8, season := 'summer']
+  dt[month == 9 | month == 10 | month == 11, season := 'autumn']
+  dt[, season := factor(season, levels = c('winter', 'spring', 'summer', 'autumn'))]
+  
+}
+
+make_precip_class <- function(dt){
+  quantile <- quantile(dt$precipitation)
+  dt[, precipitation_class := factor('light')]
+  dt[precipitation >= quantile[2] & precipitation < quantile[3], precipitation_class := factor('moderate')]
+  dt[precipitation >= quantile[3] & precipitation < quantile[4], precipitation_class := factor('heavy')]
+  dt[precipitation >= quantile[4] & precipitation < quantile[5], precipitation_class := factor('very heavy')]
+}
+
 
