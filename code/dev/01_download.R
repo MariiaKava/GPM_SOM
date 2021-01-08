@@ -1,7 +1,7 @@
-source("./code/source.R")
+source("../source.R")
 
 
-links_file <- "subset_GPM_3IMERGDF_06_20200826_193405.txt"
+links_file <- "subset_GPM_3IMERGHH_06_20200829_061141.txt"
 
 file <- paste0(dload_path, links_file)
 
@@ -12,6 +12,6 @@ names = substr(urls, 228, 280) #subset the character for naming the files
 library(httr)
 for (i in 1:length(urls)){
   GET(as.character(urls[i]),
-      authenticate("", ""),
-      write_disk(path = names[i], overwrite = T))
+      authenticate("MariiaKava", "JtCZFvDhRrLy7C9"),
+      write_disk(path = paste0("../../data/raw/",names[i]), overwrite = T))
 }

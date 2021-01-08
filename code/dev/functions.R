@@ -54,7 +54,35 @@ make_precip_class <- function(dt){
   dt[, precipitation_class := factor('light')]
   dt[precipitation >= quantile[2] & precipitation < quantile[3], precipitation_class := factor('moderate')]
   dt[precipitation >= quantile[3] & precipitation < quantile[4], precipitation_class := factor('heavy')]
-  dt[precipitation >= quantile[4] & precipitation < quantile[5], precipitation_class := factor('very heavy')]
+  dt[precipitation >= quantile[4] & precipitation < quantile[5], precipitation_class := factor('very_heavy')]
 }
+
+
+manipulate_plot <- function(precip){
+  
+  dsn <- "code/shapes/SPH_KRAJ.shp"
+  wa.map <- readOGR(dsn)
+  
+  precip2 <-  as.data.frame(precip)
+  coordinates(precip2) <- ~ lon + lat
+  proj4string(precip2) <- proj4string(wa.map)
+  
+  daily_rain_df <- precip2[!is.na(over(precip2, as(wa.map, "SpatialPolygons"))), ]
+  daily_rain_df <- as.data.frame(daily_rain_df)
+  
+  par_to_pick <- as.list(colnames(precip[,-c(1,2)]))
+  
+  manipulate(
+    {ggplot() + 
+        geom_tile(data = daily_rain_df, aes(x=lon, y = lat, fill=daily_rain_df[,factor])) + 
+        coord_fixed(ratio = 1) +
+        scale_fill_viridis(direction = -1) +
+        theme_bw()+
+        guides(fill=guide_legend(factor))+
+        ggtitle("Plot showing chosen precipitation summary parameter")},
+    factor = picker(par_to_pick))
+  
+}
+
 
 

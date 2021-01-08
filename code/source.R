@@ -5,13 +5,12 @@ library(doParallel)
 library(reshape2)
 library(doSNOW)
 library(utils)
-library(mapview)
 library(sf)
-library(ggmap)
-library(metR)
-library(lubridate)
-library(oce)
 library(spData)
+library(rgdal)
+library(viridis)
+library(manipulate)
+
 
 
 dload_path <- "data/raw/"

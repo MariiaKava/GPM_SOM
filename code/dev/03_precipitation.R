@@ -1,14 +1,8 @@
 source("code/source.R")
 source("code/dev/functions.R")
 
+
 precip <- readRDS("data/precipitation.rds")
-
-# max(precipitation$lat)
-# min(precipitation$lat)
-# max(precipitation$lon)
-# min(precipitation$lon)
-
-
 
 precip_stats <- precip[, .(mean_05h = mean(precipitation),
                                              sd_05h = sd(precipitation),
@@ -81,7 +75,7 @@ precip_avg_class_year <- precip_class_year[precipitation_class == "light",
 precip_summary <- merge(precip_summary,precip_avg_class_year,by.x = c("lat", "lon"),
                                by.y = c("lat", "lon"))
 
-precipn_avg_class_year <- precip_class_year[precipitation_class == "moderate", 
+precip_avg_class_year <- precip_class_year[precipitation_class == "moderate", 
                                                         .(moderate_events_year = mean(no_events_year)),
                                                         by = .(lat, lon)]
 precip_summary <- merge(precip_summary,precip_avg_class_year,by.x = c("lat", "lon"),
@@ -93,7 +87,7 @@ precip_avg_class_year <- precip_class_year[precipitation_class == "heavy",
 precip_summary <- merge(precip_summary,precip_avg_class_year,by.x = c("lat", "lon"),
                                by.y = c("lat", "lon"))
 
-precip_avg_class_year <- precip_class_year[precipitation_class == "very heavy", 
+precip_avg_class_year <- precip_class_year[precipitation_class == "very_heavy", 
                                                         .(very_heavy_events_year = mean(no_events_year)),
                                                         by = .(lat, lon)]
 precip_summary <- merge(precip_summary,precip_avg_class_year,by.x = c("lat", "lon"),
@@ -167,7 +161,7 @@ precip_year_sum <- precip_daily[precipitation_class == "heavy",
 precip_summary <- merge(precip_summary,precip_year_sum,by.x = c("lat", "lon"),
                         by.y = c("lat", "lon"))
 
-precip_year_sum <- precip_daily[precipitation_class == "very heavy", 
+precip_year_sum <- precip_daily[precipitation_class == "very_heavy", 
                                            .(very_heavy_amount_precip_year = median(precipitation)),
                                            by = .(lat, lon)]
 precip_summary <- merge(precip_summary,precip_year_sum,by.x = c("lat", "lon"),
@@ -206,18 +200,13 @@ precip_summary <- merge(precip_summary,precip_season_sum,by.x = c("lat","lon"),
 
 
 
-# draft graphs ----  
-  
-# delta_lat <- 0.1
-# delta_lon <- 0.1
-#   
-# qmplot(lon, lat, data = precip_summary, geom = "tile", fill = wet_days_summer, 
-#          alpha = wet_days_summer, zoom = 8,
-#          legend = "bottomleft") +
-#   geom_leg(aes(xend = lon + delta_lon, yend = lat + delta_lat)) 
-# 
-# 
-# saveRDS(precipitation_summary,"data/precipitation_summary.rds")
+#----plot----
+
+manipulate_plot(precip_summary)
+ 
+
+
+saveRDS(precip_summary,"data/precipitation_summary.rds")
 
 
 
