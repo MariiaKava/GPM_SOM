@@ -10,6 +10,7 @@ library(spData)
 library(rgdal)
 library(viridis)
 library(manipulate)
+library(kohonen)
 
 
 
