@@ -82,7 +82,7 @@ som_cluster <- cutree(hclust(dist(som_model$codes[[1]])), 10) # set number of cl
 plot(som_model, type="codes", bgcol = pretty_palette[som_cluster], main = "Clusters") 
 add.cluster.boundaries(som_model, som_cluster)
 
-cluster_details <- data.frame(id=precip$coords, 
+cluster_details <- data.frame(id=precip$id, 
                               cluster=som_cluster[som_model$unit.classif])
 
 #----plot clusters on the map----
@@ -94,10 +94,15 @@ proj4string(precip2) <- proj4string(wa.map)
 mappoints <- precip2[!is.na(over(precip2, as(wa.map, "SpatialPolygons"))), ]
 mappoints <- as.data.frame(mappoints)
 mappoints <- merge(mappoints, cluster_details, by="id")
+mappoints$cluster <- as.factor(mappoints$cluster)
 
-# first experiment with clusters on the map, find better visualisation
-ggplot() + geom_tile(data = mappoints, aes(x=long, y = lat, fill=cluster)) + 
-  coord_fixed(ratio = 1) +
-  scale_fill_viridis() +
-  theme_bw()
 
+
+# first experiment with clusters on the map, find better visualisation and colors
+
+ggplot()+
+  geom_tile(data=mappoints,aes(x=long,y=lat))+
+  aes(long,lat,fill = factor(cluster))+
+  coord_equal()+
+  scale_fill_manual(values = pretty_palette)
+                                                      

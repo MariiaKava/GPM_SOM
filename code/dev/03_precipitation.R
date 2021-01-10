@@ -133,9 +133,9 @@ for (i in 1:length(levels(precip_season$season))){
     class <- levels(precip_season$precipitation_class)[j]
     
     precip_season_aggr <- precip_season[precipitation_class == class & season == season, 
-                  median(precipitation),
+                  sum(precipitation),
                   by = .(lat, lon)]
-    precip_season_aggr <- precip_season_aggr[,paste(season,class,"median",sep="_"):=V1]
+    precip_season_aggr <- precip_season_aggr[,paste(season,class,"sum_precip",sep="_"):=V1]
     precip_season_aggr <- precip_season_aggr[,-3]
     precip_summary <- merge(precip_summary,precip_season_aggr,by.x = c("lat", "lon"),
                         by.y = c("lat", "lon"))
@@ -144,32 +144,32 @@ for (i in 1:length(levels(precip_season$season))){
 # amount of precipitation by type per year
 
 precip_year_sum <- precip_daily[precipitation_class == "light", 
-                                           .(light_amount_precip_year = median(precipitation)),
+                                           .(light_amount_precip_year = sum(precipitation)),
                                            by = .(lat, lon)]
 precip_summary <- merge(precip_summary,precip_year_sum,by.x = c("lat", "lon"),
                         by.y = c("lat", "lon"))
 
 precip_year_sum <- precip_daily[precipitation_class == "moderate", 
-                                            .(moderate_amount_precip_year = median(precipitation)),
+                                            .(moderate_amount_precip_year = sum(precipitation)),
                                             by = .(lat, lon)]
 precip_summary <- merge(precip_summary,precip_year_sum,by.x = c("lat", "lon"),
                         by.y = c("lat", "lon"))
 
 precip_year_sum <- precip_daily[precipitation_class == "heavy", 
-                                           .(heavy_amount_precip_year = median(precipitation)),
+                                           .(heavy_amount_precip_year = sum(precipitation)),
                                            by = .(lat, lon)]
 precip_summary <- merge(precip_summary,precip_year_sum,by.x = c("lat", "lon"),
                         by.y = c("lat", "lon"))
 
 precip_year_sum <- precip_daily[precipitation_class == "very_heavy", 
-                                           .(very_heavy_amount_precip_year = median(precipitation)),
+                                           .(very_heavy_amount_precip_year = sum(precipitation)),
                                            by = .(lat, lon)]
 precip_summary <- merge(precip_summary,precip_year_sum,by.x = c("lat", "lon"),
                         by.y = c("lat", "lon"))
 
 # amount of precipitation by year
 
-precip_year_sum <- precip_daily[,.(amount_precip_year = median(precipitation)),
+precip_year_sum <- precip_daily[,.(amount_precip_year = sum(precipitation)),
                                 by = .(lat, lon)]
 precip_summary <- merge(precip_summary,precip_year_sum,by.x = c("lat", "lon"),
                         by.y = c("lat", "lon"))
@@ -177,22 +177,22 @@ precip_summary <- merge(precip_summary,precip_year_sum,by.x = c("lat", "lon"),
 # amount of precipitation by season
 
 precip_season_sum <- precip_daily[season == "summer",
-                                  .(median_precip_summer = median(precipitation)), 
+                                  .(sum_precip_summer = sum(precipitation)), 
                                   by = .(lat, lon)]
 precip_summary <- merge(precip_summary,precip_season_sum,by.x = c("lat","lon"),
                         by.y = c("lat","lon"))
 precip_season_sum <- precip_daily[season == "winter",
-                                  .(median_precip_winter = median(precipitation)), 
+                                  .(sum_precip_winter = sum(precipitation)), 
                                   by = .(lat, lon)]
 precip_summary <- merge(precip_summary,precip_season_sum,by.x = c("lat", "lon"),
                         by.y = c("lat","lon"))
 precip_season_sum <- precip_daily[season == "autumn",
-                                  .(median_precip_autumn = median(precipitation)), 
+                                  .(sum_precip_autumn = sum(precipitation)), 
                                   by = .(lat, lon)]
 precip_summary <- merge(precip_summary,precip_season_sum,by.x = c("lat", "lon"),
                         by.y = c("lat", "lon"))
 precip_season_sum <- precip_daily[season == "spring",
-                                  .(median_precip_spring = median(precipitation)), 
+                                  .(sum_precip_spring = sum(precipitation)), 
                                   by = .(lat,lon)]
 precip_summary <- merge(precip_summary,precip_season_sum,by.x = c("lat","lon"),
                         by.y = c("lat","lon"))
@@ -201,8 +201,9 @@ precip_summary <- merge(precip_summary,precip_season_sum,by.x = c("lat","lon"),
 
 
 #----plot----
+par_to_pick <- as.list(colnames(precip_summary[,-c(1,2)]))
 
-manipulate_plot(precip_summary)
+manipulate_plot(precip_summary,par_to_pick)
  
 
 

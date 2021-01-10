@@ -58,7 +58,7 @@ make_precip_class <- function(dt){
 }
 
 
-manipulate_plot <- function(precip){
+manipulate_plot <- function(precip,par_to_pick){
   
   dsn <- "code/shapes/SPH_KRAJ.shp"
   wa.map <- readOGR(dsn)
@@ -70,9 +70,9 @@ manipulate_plot <- function(precip){
   daily_rain_df <- precip2[!is.na(over(precip2, as(wa.map, "SpatialPolygons"))), ]
   daily_rain_df <- as.data.frame(daily_rain_df)
   
-  par_to_pick <- as.list(colnames(precip[,-c(1,2)]))
   
-  manipulate(
+  
+  my_plot <- manipulate(
     {ggplot() + 
         geom_tile(data = daily_rain_df, aes(x=lon, y = lat, fill=daily_rain_df[,factor])) + 
         coord_fixed(ratio = 1) +
