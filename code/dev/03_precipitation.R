@@ -13,7 +13,7 @@ precip <- readRDS("data/filled_missing_datetime/05h_precipitation.rds")
 #                            min_05h = min(precipitation),
 #                            max_05h = max(precipitation)), by = c("lat","lon")]
 # 
-# precip_stats <- precip_stats[,coeff_of_var := mean_05h/sd_05h]
+
 
 
 # add year and month ----

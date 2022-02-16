@@ -15,10 +15,10 @@ rows <- sample(nrow(precip))
 precip <- precip[rows, ]
 #----creating training data----
 #precip_train <- precip[,c(3,8,9,10,11,28,29,30,31,32,37)]# training data for annual variables
-#precip_train <- precip[,-c(1,2,3,8,9,10,11,28,29,30,31,32,37,58,59)]# training data for seasonal variables 
-precip_train <- precip[,-c(1,2,58,59)]# training data for all variables
+precip_train <- precip[,-c(1,2,3,8,9,10,11,28,29,30,31,32,37,58,59)]# training data for seasonal variables 
+#precip_train <- precip[,-c(1,2,58,59)]# training data for all variables
 precip_train_matrix <- as.matrix(scale(as.data.table(precip_train),center=TRUE,scale=TRUE)) # standardized vectors
-path <- "results/filled_missing_datetime/threshold_precipInt_01/SOM/all_variables/"
+path <- "results/filled_missing_datetime/threshold_precipInt_01/SOM/seasonal_variables/"
 #----creating som grid and model and justifying parameters----
 som_grid <- somgrid(xdim = 5, ydim=5, topo="hexagonal")# choose grid for SOMs
 # som_model <- som(precip_train_matrix, 
@@ -30,7 +30,7 @@ som_model <- supersom(precip_train_matrix,
                       grid=som_grid,
                       rlen=100000, 
                       mode = "pbatch", 
-                      cores = 3)
+                      cores = 6)
 # distance from each node’s weights to the samples represented by that node is reduced
 # If the curve is continually decreasing, more iterations are required
 v <- "100000_5-5_"
@@ -103,7 +103,7 @@ plot(wss) # number of clusters can be chosen
 dev.off()
 #----creating clusters----
 ## use hierarchical clustering to cluster the codebook vectors
-ncluster <- 10
+ncluster <- 5
 som_cluster <- cutree(hclust(dist(som_model$codes[[1]])), ncluster) # set number of clusters
 # plot these results:
 # tiff(filename=paste0(path,v,ncluster,"_cluster_result.tiff"), width=2300, height=2000, res=300)
@@ -117,7 +117,7 @@ cluster_details <- data.frame(id=precip$id,
 # wa.map <- readOGR(dsn)
 precip_to_plot <- merge(precip, cluster_details, by="id")
 precip_to_plot$cluster <- as.factor(precip_to_plot$cluster)
-
+saveRDS(precip_to_plot,paste0(path,"5-5_5_cluster_precip_summary.rds"))
 # map
 tiff(filename=paste0(path,v,ncluster,"_cluster_map.tiff"), width=2300, height=2000, res=300)
 ggplot(precip_to_plot)+
