@@ -11,6 +11,12 @@ library(rgdal)
 library(viridis)
 library(manipulate)
 library(kohonen)
+library(dplyr)
+library(xtable)
+library(raster)
+library(gridExtra)
+library(dplyr)
+library(colorspace)
 
 
 

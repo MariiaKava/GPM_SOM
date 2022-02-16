@@ -1,10 +1,10 @@
-source("code/source.R")
+#source("code/source.R")
 #----Merge nc4 files----
 #Excract and merge date,lon,lag and precipitation into data table
 merge_nc4 <- function(i){
 
   
-  file <-ncdf4::nc_open(paste0(instaldata_path,all_nc4[1]))  
+  file <-ncdf4::nc_open(paste0(instaldata_path,all_nc4[i]))  
   
   precipitation_data <-  ncdf4::ncvar_get(file)
 
@@ -23,35 +23,35 @@ merge_nc4 <- function(i){
 
   precip_summary <- precip_summary[complete.cases(precip_summary), ]
   
-  precip_summary<-precip_summary[precipitation<1,precipitation:=0] #Set all values with precipitation < 1mm to 0
+  # precip_summary<-precip_summary[precipitation<1,precipitation:=0] #Set all values with precipitation < 1mm to 0
  
   
   
-  if (any(precip_summary$precipitation >0)){
+  #if (any(precip_summary$precipitation >0)){
   
-  precip_summary<-precip_summary[precip_summary$precipitation>0,]
+ # precip_summary<-precip_summary[precip_summary$precipitation>0,]
   
   precip_summary <- cbind(precip_summary,date)
   
   return (precip_summary)
-  }
-  else{ return() }
+ # }
+  #else{ return() }
 
   
 }
 
 add_seasons <- function(dt){
-  dt[month == 12 | month == 1 | month == 2, season := 'winter']
-  dt[month == 3 | month == 4 | month == 5, season := 'spring']
-  dt[month == 6 | month == 7 | month == 8, season := 'summer']
-  dt[month == 9 | month == 10 | month == 11, season := 'autumn']
-  dt[, season := factor(season, levels = c('winter', 'spring', 'summer', 'autumn'))]
+  dt[month == 12 | month == 1 | month == 2, season := 'DJF']
+  dt[month == 3 | month == 4 | month == 5, season := 'MAM']
+  dt[month == 6 | month == 7 | month == 8, season := 'JJA']
+  dt[month == 9 | month == 10 | month == 11, season := 'SON']
+  dt[, season := factor(season, levels = c('DJF', 'MAM', 'JJA', 'SON'))]
   
 }
 
 make_precip_class <- function(dt){
-  quantile <- quantile(dt$precipitation)
-  dt[, precipitation_class := factor('light')]
+  quantile <- quantile(dt$precipitation,probs=c(0.05, 0.3, 0.6, 0.9, 0.95))
+  dt[precipitation >= quantile[1] & precipitation < quantile[2], precipitation_class := factor('light')]
   dt[precipitation >= quantile[2] & precipitation < quantile[3], precipitation_class := factor('moderate')]
   dt[precipitation >= quantile[3] & precipitation < quantile[4], precipitation_class := factor('heavy')]
   dt[precipitation >= quantile[4] & precipitation < quantile[5], precipitation_class := factor('very_heavy')]
@@ -59,47 +59,47 @@ make_precip_class <- function(dt){
 
 
 calc_n_events <- function(precip){
-  precip_no_events_year <- precip[, .(no_events_year = .N),by = .(lat, lon, year)]
-  precip_no_events_season <- precip[, .(no_events_season = .N), by = .(lat, lon, season)]
-  precip_no_events_season_year <- precip[, .(no_events_season = .N), by = .(lat, lon, year, season)]
-  precip_avg_no_events_year <- precip_no_events_year[, .(wet_days_year = mean(no_events_year)),, 
-                                                     by = .(lat,lon)]
+  precip <- precip[precip$precipitation>0.1,]
+  precip_ann_wetdays <- precip[, .(ann_wetdays = .N),by = .(lat, lon, year)]
+  precip_wetdays_ann_season <- precip[, .(wetdays = .N), by = .(lat, lon, year, season)]
+  precip_avg_ann_wetdays <- precip_ann_wetdays[, .(ann_wetdays = mean(ann_wetdays)),, 
+                                               by = .(lat,lon)]
   
-  precip_summary <- precip_avg_no_events_year
-  precip_avg_no_events_summer <- precip_no_events_season_year[season == "summer",
-                                                              .(wet_days_summer = mean(no_events_season)), 
+  precip_summary <- precip_avg_ann_wetdays
+  wetDays_JJA <- precip_wetdays_ann_season[season == "JJA",
+                                                              .(wet_days_summer = mean(wetdays)), 
                                                               by = .(lat, lon)]
-  precip_summary <- merge(precip_summary,precip_avg_no_events_summer,by.x = c("lat","lon"),
+  precip_summary <- merge(precip_summary,wetDays_JJA,by.x = c("lat","lon"),
                           by.y = c("lat","lon"))
   
-  precip_avg_no_events_winter <- precip_no_events_season_year[season == "winter",
-                                                              .(wet_days_winter = mean(no_events_season)), 
+  wetDays_DJF <- precip_wetdays_ann_season[season == "DJF",
+                                                              .(wet_days_winter = mean(wetdays)), 
                                                               by = .(lat, lon)]
-  precip_summary <- merge(precip_summary,precip_avg_no_events_winter,by.x = c("lat", "lon"),
+  precip_summary <- merge(precip_summary,wetDays_DJF,by.x = c("lat", "lon"),
                           by.y = c("lat","lon"))
   
   
-  precip_avg_no_events_autumn <- precip_no_events_season_year[season == "autumn",
-                                                              .(wet_days_autumn = mean(no_events_season)), 
+  wetDays_SON <- precip_wetdays_ann_season[season == "SON",
+                                                              .(wet_days_autumn = mean(wetdays)), 
                                                               by = .(lat, lon)]
-  precip_summary <- merge(precip_summary,precip_avg_no_events_autumn,by.x = c("lat", "lon"),
+  precip_summary <- merge(precip_summary,wetDays_SON,by.x = c("lat", "lon"),
                           by.y = c("lat", "lon"))
   
-  precip_avg_no_events_spring <- precip_no_events_season_year[season == "spring",
-                                                              .(wet_days_spring = mean(no_events_season)), 
-                                                              by = .(lat,lon)]
-  precip_summary <- merge(precip_summary,precip_avg_no_events_spring,by.x = c("lat","lon"),
+ wetDays_MAM <- precip_wetdays_ann_season[season == "MAM",
+                                                              .(wet_days_spring = mean(wetdays)), 
+                                                              by = .(lat,lon)] 
+  precip_summary <- merge(precip_summary,wetDays_MAM,by.x = c("lat","lon"),
                           by.y = c("lat","lon"))
-  precip_avg_no_events_year <- precip_no_events_year[, .(wet_events_year = mean(no_events_year)),, 
-                                                     by = .(lat,lon)]
-
+  #precip_avg_ann_wetdays <- precip_ann_wetdays[, .(wet_events_year = mean(ann_wetdays)),, 
+                                               #by = .(lat,lon)]
+  
   
   return(precip_summary)
 }
 
 calc_by_precip_type <- function(precip){
   # types of precipitation ----
-  
+  precip <- precip[precip$precipitation>0.1,]
   precip_class <- make_precip_class(precip)
   
   # no event by type per year ====
@@ -158,65 +158,101 @@ calc_by_precip_type <- function(precip){
 
 int_precip <- function(precip_daily){
   # amount of precipitation by type per year
-  precip_daily <- precip_events
-  
+  #precip_daily <- precip_events
+  precip_daily <- make_precip_class(precip_daily)
   precip_annual <- precip_daily[,.(precipitation = sum(precipitation)),
                                   by = .(lat, lon,year,precipitation_class)]
   
   precip_year_sum <- precip_annual[precipitation_class == "light", 
-                                  .(light_annual_sum_precip = mean(precipitation)),
+                                  .(light_annual_precip = mean(precipitation)),
                                   by = .(lat, lon)]
   precip_summary <- precip_year_sum
  
   precip_year_sum <- precip_annual[precipitation_class == "moderate", 
-                                  .(moderate_annual_sum_precip = mean(precipitation)),
+                                  .(moderate_annual_precip = mean(precipitation)),
                                   by = .(lat, lon)]
   precip_summary <- merge(precip_summary,precip_year_sum,by.x = c("lat", "lon"),
-                          by.y = c("lat", "lon"))
+                          by.y = c("lat", "lon"),all.y=TRUE)
   precip_year_sum <- precip_annual[precipitation_class == "heavy", 
-                                  .(heavy_annual_sum_precip = mean(precipitation)),
+                                  .(heavy_annual_precip = mean(precipitation)),
                                   by = .(lat, lon)]
   precip_summary <- merge(precip_summary,precip_year_sum,by.x = c("lat", "lon"),
-                          by.y = c("lat", "lon"))
+                          by.y = c("lat", "lon"),all.y=TRUE)
   precip_year_sum <- precip_annual[precipitation_class == "very_heavy", 
-                                  .(very_heavy_annual_sum_precip = mean(precipitation)),
+                                  .(very_heavy_annual_precip = mean(precipitation)),
                                   by = .(lat, lon)]
   precip_summary <- merge(precip_summary,precip_year_sum,by.x = c("lat", "lon"),
-                          by.y = c("lat", "lon"))
+                          by.y = c("lat", "lon"),all.y=TRUE)
   
   # amount of precipitation by year
   
   precip_annual<- precip_daily[, 
                                .(precipitation = sum(precipitation)),
                                by = .(lat, lon,year)]
-  precip_year_sum <- precip_annual[,.(annual_sum_precip = mean(precipitation)),
+  precip_year_sum <- precip_annual[,.(annual_precip = mean(precipitation)),
                                   by = .(lat, lon)]
   precip_summary <- merge(precip_summary,precip_year_sum,by.x = c("lat", "lon"),
-                          by.y = c("lat", "lon"))
+                          by.y = c("lat", "lon"),all.y=TRUE)
   
   # amount of precipitation by season
   precip_season <- precip_daily[,.(precipitation = sum(precipitation)), 
                                     by = .(lat, lon,year,season)]
-  precip_season_sum <- precip_season[season == "summer",
-                                    .(avg_summer_sum_precip = mean(precipitation)), 
+  precip_season_sum <- precip_season[season == "JJA",
+                                    .(avg_JJA_precip = mean(precipitation)), 
                                     by = .(lat, lon)]
   precip_summary <- merge(precip_summary,precip_season_sum,by.x = c("lat","lon"),
-                          by.y = c("lat","lon"))
-  precip_season_sum <- precip_season[season == "winter",
-                                    .(avg_winter_sum_precip = mean(precipitation)), 
+                          by.y = c("lat","lon"),all.y=TRUE)
+  precip_season_sum <- precip_season[season == "DJF",
+                                    .(avg_DJF_precip = mean(precipitation)), 
                                     by = .(lat, lon)]
   precip_summary <- merge(precip_summary,precip_season_sum,by.x = c("lat", "lon"),
-                          by.y = c("lat","lon"))
-  precip_season_sum <- precip_season[season == "autumn",
-                                    .(avg_autumn_sum_precip = mean(precipitation)), 
+                          by.y = c("lat","lon"),all.y=TRUE)
+  precip_season_sum <- precip_season[season == "SON",
+                                    .(avg_SON_precip = mean(precipitation)), 
                                     by = .(lat, lon)]
   precip_summary <- merge(precip_summary,precip_season_sum,by.x = c("lat", "lon"),
-                          by.y = c("lat", "lon"))
-  precip_season_sum <- precip_season[season == "spring",
-                                    .(avg_spring_sum_precip = mean(precipitation)), 
+                          by.y = c("lat", "lon"),all.y=TRUE)
+  precip_season_sum <- precip_season[season == "MAM",
+                                    .(avg_MAM_precip = mean(precipitation)), 
                                     by = .(lat,lon)]
   precip_summary <- merge(precip_summary,precip_season_sum,by.x = c("lat","lon"),
-                          by.y = c("lat","lon"))
+                          by.y = c("lat","lon"),all.y=TRUE)
+  precip_season <- precip_daily[,.(precipitation = sum(precipitation)), 
+                                by = .(lat, lon,year,season,precipitation_class)]
+  
+  # CV of precipitation by year
+  
+  precip_annual<- precip_daily[, 
+                               .(precipitation = sd(precipitation)/mean(precipitation)),
+                               by = .(lat, lon,year)]
+  precip_year_sum <- precip_annual[,.(annual_CV = mean(precipitation)),
+                                   by = .(lat, lon)]
+  precip_summary <- merge(precip_summary,precip_year_sum,by.x = c("lat", "lon"),
+                          by.y = c("lat", "lon"),all.y=TRUE)
+  
+  # CV of precipitation by season
+  precip_season <- precip_daily[,.(precipitation = sd(precipitation)/mean(precipitation)), 
+                                by = .(lat, lon,year,season)]
+  precip_season_sum <- precip_season[season == "JJA",
+                                     .(JJA_CV = sd(precipitation)/mean(precipitation)), 
+                                     by = .(lat, lon)]
+  precip_summary <- merge(precip_summary,precip_season_sum,by.x = c("lat","lon"),
+                          by.y = c("lat","lon"),all.y=TRUE)
+  precip_season_sum <- precip_season[season == "DJF",
+                                     .(DJF_CV = sd(precipitation)/mean(precipitation)), 
+                                     by = .(lat, lon)]
+  precip_summary <- merge(precip_summary,precip_season_sum,by.x = c("lat", "lon"),
+                          by.y = c("lat","lon"),all.y=TRUE)
+  precip_season_sum <- precip_season[season == "SON",
+                                     .(SON_CV = sd(precipitation)/mean(precipitation)), 
+                                     by = .(lat, lon)]
+  precip_summary <- merge(precip_summary,precip_season_sum,by.x = c("lat", "lon"),
+                          by.y = c("lat", "lon"),all.y=TRUE)
+  precip_season_sum <- precip_season[season == "MAM",
+                                     .(MAM_CV = sd(precipitation)/mean(precipitation)), 
+                                     by = .(lat,lon)]
+  precip_summary <- merge(precip_summary,precip_season_sum,by.x = c("lat","lon"),
+                          by.y = c("lat","lon"),all.y=TRUE)
   precip_season <- precip_daily[,.(precipitation = sum(precipitation)), 
                                 by = .(lat, lon,year,season,precipitation_class)]
 
@@ -231,10 +267,10 @@ int_precip <- function(precip_daily){
       precip_season_aggr <- precip_season_aggr[precipitation_class == class & season == season, 
                                           mean(V1),
                                           by = .(lat, lon)]
-      precip_season_aggr <- precip_season_aggr[,paste("avg",season,class,"sum_precip",sep="_"):=V1]
+      precip_season_aggr <- precip_season_aggr[,paste("avg",season,class,"precip",sep="_"):=V1]
       precip_season_aggr <- precip_season_aggr[,-3]
       precip_summary <- merge(precip_summary,precip_season_aggr,by.x = c("lat", "lon"),
-                              by.y = c("lat", "lon"))
+                              by.y = c("lat", "lon"),all.y=TRUE)
     }}
   return(precip_summary)
 }

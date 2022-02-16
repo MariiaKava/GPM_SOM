@@ -3,3 +3,13 @@
 .RData
 .Ruserdata
 data/*
+DEM.RDS
+DEM_czech.tif
+Mariia_Kavalerova_presentation.Rmd
+NASA_IMERG.png
+docs
+min_max_months_comp_table2_p13.png
+precip_days_comp_table4_p14.png
+precip_totals_comp_table1_p6.png
+presentation.Rmd
+test.png
