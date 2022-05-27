@@ -5,8 +5,6 @@ all_nc4 <- list.files(instaldata_path)
 
 precip_summary_final <- data.table()
 
-#memory.limit(9000)
-
 #----parallel execution settings----
 
 cl <- makeCluster(4,outfile="/dev/null") # no.cores

@@ -43,36 +43,3 @@ precip <- rbind(precip,precip2)
 dates <- unique(precip$date)
 
 saveRDS(precip,"data/filled_missing_datetime/05h_precipitation.rds")
-#merge with elevation
-precip_daily <- readRDS("results/filled_missing_datetime/threshold_precipInt_01/daily_precip.rds")
-el <- arrow::read_feather("data/elevation_data.feather")
-precip_daily <- as.data.table(precip_daily)
-precip <- precip_daily[,.(precip=mean(precipitation)),by = .(lat,lon)]
-coords <- precip[,-3]
-write_feather(coords,"data/coords.feather")
-
-# cut coords closer to CZ ----
-# dsn <- "code/shapes/SPH_KRAJ.shp"
-# wa.map <- readOGR(dsn)
-# wa.map_buff <- buffer(wa.map,width=0.06)
-# precip2 <-  as.data.frame(precip)
-# rm(precip)
-# coordinates(precip2) <- ~ lon + lat
-# proj4string(precip2) <- proj4string(wa.map)
-# rm(wa.map)
-# precip <- crop(precip2,wa.map_buff)
-# precip <- as.data.frame(precip)
-# rm(precip2,wa.map_buff)
-# 
-# daily_precip <- readRDS("results/zero_threshold/daily_precip_threshold-0.rds")
-# precip <- as.data.table(precip)
-# precip <- precip[,coords:=""]
-# precip$coords <- paste(precip$lat," ",precip$lon)
-# daily_precip <- daily_precip[,coords:=""]
-# daily_precip$coords <- paste(daily_precip$lat," ",daily_precip$lon)
-# daily_precip_cut <- daily_precip[daily_precip$coords %in% precip$coords,]
-# cc <- unique(daily_precip_cut$coords)
-# 
-# saveRDS(daily_precip_cut,"results/zero_threshold/daily_precip_threshold-0.rds")
-# saveRDS(precip,"results/zero_threshold/precipitation_summary_threshold-0.rds")
-#---
