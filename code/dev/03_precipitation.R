@@ -2,7 +2,7 @@ source("code/source.R")
 source("code/dev/functions.R")
 
 path <- "results/filled_missing_datetime/threshold_precipInt_01/" # folder to save files
-precip <- readRDS("data/filled_missing_datetime/05h_precipitation.rds")
+precip <- readRDS("data/05h_precipitation.rds")
 
 # precip_cut <- precip[1:10,c(-5,-6)]
 # precip_cut$date <- as.character(precip_cut$date)

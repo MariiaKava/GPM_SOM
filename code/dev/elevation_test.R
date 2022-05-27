@@ -50,17 +50,18 @@ close(pb)
 
 
 stopCluster(cl)
-
+dem_df <- as.data.frame(DEM)
+writeRaster(DEM,'results/dem.tif',options=c('TFW=YES'))
 saveRDS(DEM,"DEM.RDS")
 library(raster)
 dsn <- "code/shapes/SPH_KRAJ.shp"
-el <- stack("DEM_czech.tif")
+el <- stack("results/dem.tif")
 el1<- as.data.frame(el)
 el1[1:10,]
 
 wa.map <- readOGR(dsn)
 
-plot(DEM)
+plot(el)
 plot(wa.map,add=TRUE)
 
 el <- raster("DEM_czech.tif")
@@ -73,9 +74,17 @@ r3 <- mask(r2,wa.map)
 
 plot(el)
 
-plot(r3)
+plot(r3, col = terrain.colors(10))
 plot(wa.map,add=TRUE)
-writeRaster(DEM,"DEM_czech.tif")
+ggplot(r3)+
+  scale_fill_gradientn(colours = terrain.colors(100))+
+  theme_bw()
+dev.off()
+r_points <- rasterToPoints(r3)
+t_r_point <- t(r_points)
+r_df <- data.frame(r_points)
+melted_df <- t(r_df)
+writeRaster(r3,"results/DEM_czech.tif",options=c('TFW=YES'),overwrite=TRUE)
 
 
 

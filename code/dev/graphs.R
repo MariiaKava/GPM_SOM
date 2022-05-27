@@ -1,6 +1,6 @@
 #----plot----
-daily_precip <- readRDS("results/zero_threshold/daily_precip_threshold-0.rds")
-precip_summary <- readRDS("results/zero_threshold/precipitation_summary_threshold-0.rds")
+daily_precip <- readRDS("results/filled_missing_datetime/threshold_precipInt_01/daily_precip.rds")
+precip_summary <- readRDS("results/filled_missing_datetime/threshold_precipInt_01/precipitation_summary.rds")
 
 par_to_pick <- as.list(colnames(precip_summary[,-c(1,2)]))
 
@@ -53,12 +53,11 @@ manipulate(
       ggtitle("Plot showing chosen precipitation summary parameter")},
   factor = picker(par_to_pick))
 
-
+precip_to_plot <- ANN_precip[,.(annual_precip = mean(annual_precip)), by = c("lat","lon")]
 tiff(filename="annual_precip.tiff", width=2300, height=2000, res=300)
 ggplot(precip_to_plot)+
   geom_tile(aes(lon,lat,fill=annual_precip))+
   borders(wa.map,colour = "black")+
   coord_fixed(ratio = 1) +
-  scale_fill_viridis(direction = -1)+
-  facet_wrap(facets = vars(year),ncol = 4)
+  scale_fill_viridis(direction = -1)
 dev.off()

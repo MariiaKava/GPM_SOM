@@ -20,20 +20,14 @@ precip
 
 dsn <- "data/WGS84/SPH_KRAJ.shp"
 wa.map <- readOGR(dsn)
-
 plot(wa.map)
-
 precip2 <- as.data.frame(precip)
-
 coordinates(precip2) <- ~ lon + lat
 proj4string(precip2) <- proj4string(wa.map)
-
-
 daily_rain_df <- precip2[!is.na(over(precip2, as(wa.map, "SpatialPolygons"))), ]
-
 daily_rain_df <- as.data.frame(daily_rain_df)
-
-ggplot() + geom_raster(data = daily_rain_df, aes(x=lon, y = lat, fill=precipitation)) + 
+ggplot() + 
+  geom_raster(data = daily_rain_df, aes(x=lon, y = lat, fill=precipitation)) + 
   coord_fixed(ratio = 1) +
   scale_fill_viridis(direction = -1) +
   theme_bw()

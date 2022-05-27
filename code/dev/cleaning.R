@@ -43,6 +43,13 @@ precip <- rbind(precip,precip2)
 dates <- unique(precip$date)
 
 saveRDS(precip,"data/filled_missing_datetime/05h_precipitation.rds")
+#merge with elevation
+precip_daily <- readRDS("results/filled_missing_datetime/threshold_precipInt_01/daily_precip.rds")
+el <- arrow::read_feather("data/elevation_data.feather")
+precip_daily <- as.data.table(precip_daily)
+precip <- precip_daily[,.(precip=mean(precipitation)),by = .(lat,lon)]
+coords <- precip[,-3]
+write_feather(coords,"data/coords.feather")
 
 # cut coords closer to CZ ----
 # dsn <- "code/shapes/SPH_KRAJ.shp"
